@@ -1,0 +1,75 @@
+html{
+    background-image:none;  background-color:#4f6373;
+}
+#container, html.embed{
+    background-color:#efeed1;
+    padding:0px;
+    margin:5px;
+}
+form{
+    margin:10px;
+}
+
+h2{
+    font-size:160%;
+    font-family:inherit;
+    font-style:normal;
+    font-weight:normal;
+    color:#DEDEDE;
+    padding-right:1px;
+    padding-left:1px;
+    width:100%;
+    background-color:#293845;
+}
+h3{
+    font-size:110%;
+    font-family:inherit;
+    font-style:normal;
+    font-weight:normal;
+    color:#14212b;
+}
+div{
+    font-size:95%;
+    font-family:inherit;
+    font-style:normal;
+    font-weight:normal;
+    color:#444444;
+}
+div.search_forms {
+    font-family:verdana;
+	font-size:12px;
+	text-align:left;
+	width:300px;
+}
+div.hide_show {
+	font-size:10px;
+	text-align:right;
+	padding-top:0px;
+	padding-right:5px;
+}
+div.buttons {
+	padding:10px;
+	text-align:center;
+}
+div#hide_show_target {
+	display:none;
+	font-size:12px;
+    font-style:normal;
+    font-weight:normal;
+    color:#444444;
+	text-align:left;
+	padding-top:0px;
+	padding-right:5px;
+}
+div#hide_show_link {
+	display:block;
+    color:#5444ED;
+}
+a:hover {
+	text-decoration: underline; 
+	color: red;
+	cursor:pointer;
+}
+textarea#proteins {
+	width:270px;
+}

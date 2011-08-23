@@ -3,8 +3,66 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>Uniprot2probes</title>
+		<link rel="stylesheet"  href="css/styles.css"     type="text/css" />
+		<script type="text/javascript">
+			function showhide(divId){
+				var div = document.getElementById(divId+"_target");
+				var divLink = document.getElementById(divId+"_link");
+				
+				if (div!=null){
+					if(div.style.display == "block") {
+						div.style.display='none';
+						divLink.innerHTML='<a onclick="showhide(\''+divId+'\')">Advance Search &darr;</a>';
+					}else{
+						div.style.display='block';
+						divLink.innerHTML='<a onclick="showhide(\''+divId+'\')">Hide Options &uarr;</a>';
+					}
+				}
+			}
+		</script>
 	</head>
 	<body>
-	
+		<div id="container" class="search_forms">
+			<h2>Uniprot2Probes</h2>
+			<form>
+				Proteins:<br/>
+				<textarea rows="5"  id="proteins" autofocus></textarea><br/> 
+				<div class="hide_show">
+					<div id="hide_show_target">
+						Platform:<br/>
+						<select id="platform">
+							<option value="affymetrix">Affymetrix</option>
+							<option value="illumina">Illumina</option>
+							<option value="agilent">Agilent</option>
+							<option value="applied">Applied Microarrays</option> 
+							<option value="ependorf">Eppendorf</option>
+						</select><br/>
+						Type:<br/>
+						<select id="type">
+							<option value="fullgenome">Full Genome Array</option>
+							<option value="mirna">miRNA Array</option>
+							<option value="snp">SNP Array</option>
+							<option value="universal">Universal Tag Array</option>
+							<option value="expression">Expression Set Array</option>
+							<option value="chomosome">Chromosome Array</option>
+							<option value="promoter">Promoter Array</option>
+							<option value="exon">Exon Array</option>
+							<option value="gene">Gene Array</option>
+						</select><br/>
+						Organism:<br/>
+						<select id="organism">
+							<option value="homo sapiens">Homo sapiens</option>
+							<option value="mus musculus">Mus musculus</option>
+							<option value="danio rerio">Danio rerio</option>
+						</select><br/>
+					</div>
+					<div id="hide_show_link"><a onclick="showhide('hide_show')">Advance Search &darr;</a></div><br/>
+				</div>
+				<div class="buttons">
+					<input type="button" title="get Probes" value="get Probes"/>
+					<input type="button" title="get Chips" value="get Chips" />
+				</div>
+			</form>
+		</div>
 	</body>
 </html>
