@@ -1,16 +1,14 @@
 html{
     background-image:none;  background-color:#4f6373;
 }
-#container, html.embed{
-    background-color:#efeed1;
-    padding:0px;
-    margin:5px;
-}
 form{
     margin:10px;
 }
+body{
+    float:left;
+}
 
-h2{
+section.search_forms header{
     font-size:160%;
     font-family:inherit;
     font-style:normal;
@@ -20,6 +18,15 @@ h2{
     padding-left:1px;
     width:100%;
     background-color:#293845;
+    margin-top:0px;
+}
+section.search_forms header:hover {
+	text-decoration: underline; 
+	color: #EFEFEF;
+	cursor:pointer;
+}
+section.search_forms form{
+	display:none;
 }
 h3{
     font-size:110%;
@@ -35,11 +42,29 @@ div{
     font-weight:normal;
     color:#444444;
 }
-div.search_forms {
+section.search_forms {
     font-family:verdana;
 	font-size:12px;
 	text-align:left;
-	width:300px;
+	width:280px;
+    background-color:#efeed1;
+    padding:0px;
+    margin:5px;
+    float:left;
+}
+section.inner_frame {
+    background-color:#7f93A3;
+    float:left;
+    padding:10px;
+    width:98%;
+    margin-top:10px;
+}
+section.inner_frame header{
+    font-size:160%;
+    font-family:verdana;
+    font-style:normal;
+    font-weight:normal;
+    color:#DEDEDE;
 }
 div.hide_show {
 	font-size:10px;
@@ -51,7 +76,7 @@ div.buttons {
 	padding:10px;
 	text-align:center;
 }
-div#hide_show_target {
+div.hide_show_target {
 	display:none;
 	font-size:12px;
     font-style:normal;
@@ -61,15 +86,30 @@ div#hide_show_target {
 	padding-top:0px;
 	padding-right:5px;
 }
-div#hide_show_link {
+div.hide_show_link {
 	display:block;
     color:#5444ED;
 }
-a:hover {
+div.hide_show_link:hover {
 	text-decoration: underline; 
 	color: red;
 	cursor:pointer;
 }
-textarea#proteins {
-	width:270px;
+section.search_forms textarea {
+	width:98%;
+}
+section.results {
+    font-family:verdana;
+	font-size:12px;
+	text-align:left;
+	width:90%;
+    background-color:#efeed1;
+    padding:0px;
+    margin:5px;
+    float:left;
+}
+div.result {
+	text-align:left;
+	padding-top:10px;
+	padding-left:15px;
 }
