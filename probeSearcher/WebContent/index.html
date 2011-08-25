@@ -168,7 +168,7 @@
 			$('#ensembl2probes').topForm();
 			$('#probes2ensembl').topForm();
 			$('#getProbes_u2p').click(function(){
-				$('#results').html('<br/><br/> <img src="images/loading-bar.gif" />');
+				$('#results').html('<img src="images/loading.gif" />');
 				client.features({segment: $('#proteins_u2p').val()}, response, error_response);
 			});
 		</script>
