@@ -104,7 +104,8 @@ section.results {
 	text-align:left;
 	width:90%;
     background-color:#efeed1;
-    padding:0px;
+    padding-left:10px;
+    padding-bottom:10px;
     margin:5px;
     float:left;
 }
@@ -112,4 +113,8 @@ div.result {
 	text-align:left;
 	padding-top:10px;
 	padding-left:15px;
+}
+div.result_item {
+	font-size:90%;
+	padding-left:10px;
 }

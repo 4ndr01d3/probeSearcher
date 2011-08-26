@@ -1,7 +1,8 @@
 var show_label="Advance Search &darr;";
 var hide_label="Hide options &uarr;";
 var searchForms=[];
-
+var firstCall=true;
+var annotations=[];
 (function( $ ){
 	$.fn.hider = function() {
 		return this.each(function(){
@@ -38,6 +39,16 @@ var searchForms=[];
 	};
 })( jQuery );
 
+
+jQuery.parseIds = function(str){
+	var ids=str.split(",");
+	for (var i=0;i<ids.length;i++){
+		ids[i]=jQuery.trim(ids[i]);
+	}
+	return ids;
+};
+
+
 var server_url = 'http://www.ebi.ac.uk/enfin-srv/das-srv/das/uniprot2probes';
 var client = JSDAS.Simple.getClient(server_url);
 
@@ -52,20 +63,46 @@ var error_response = function(){
  *  This function print the annotations for the protein id P00280
  */
 var response = function(res){
-	var annotations = res.GFF.SEGMENT[0].FEATURE;// getting all the annotations
-	
-	var text = 'Proteins related with the protein '+res.GFF.SEGMENT[0].id+':<br/>';
-	for (var i = 0; i < annotations.length; i++) {
+	var text = '';
+	try {
+		annotations[res.GFF.SEGMENT[0].id] = res.GFF.SEGMENT[0].FEATURE;// getting all the annotations
+		text = '<br/>Proteins related with the protein '+res.GFF.SEGMENT[0].id+':<br/>';
+		
+		text += getDisplayPage(res.GFF.SEGMENT[0].id,0,10);
+	}catch(err){
+		text='<br/>The protein with id XXX doesn\'t have any probes linked in the knowledge base<br/>';
+	}
+	if (firstCall){
+		firstCall=false;
+		$('#results').html(text);
+	}else
+		$('#results').append(text);
+};
+
+var getDisplayPage= function(key,from,amount){
+	var text = '<div id="'+key+'">';
+	if (annotations[key].length>amount){
+		text += 'Displaying '+amount+' results of '+annotations[key].length+"<br/>";
+		text += '<a>PREV</a>|<a>NEXT</a>';
+	}
+	for (var i = from; i < annotations[key].length && i<from+amount; i++) {
 		text +='<div class="result">';
-		var ann = annotations[i];
+		var ann = annotations[key][i];
 		text +='<a href="'+ann.LINK[0].href+'" target="_blank">'+ann.label+'</a><br/>';
-		text +=' &#149; Chip: '+ann.TYPE.textContent+'<br/>';
-		text +=' &#149; Type: XXXXX<br/>';
-		text +=' &#149; Organism: '+ann.TYPE.category+'<br/>';
-		text +=' &#149; Sequence: XXXXX<br/>';
+		text +='<div class="result_item"> &#149; Chip: '+ann.TYPE.textContent+'</div>';
+		text +='<div class="result_item"> &#149; Type: XXXXX</div>';
+		text +='<div class="result_item"> &#149; Organism: '+ann.TYPE.category+'</div>';
+		text +='<div class="result_item"> &#149; Sequence: XXXXX</div>';
 		text +='</div>';
 	}
-	$('#results').html(text);
+	text +='</div>';
+	return text;
 };
-//Asking the client to retrieve the annotations for P00280
-//client.features({segment: 'P00280'}, response, error_response);
+
+var getProbes = function(str){
+	var ids=jQuery.parseIds(str);
+	for (var i=0;i<ids.length;i++){
+		client.features({segment: ids[i]}, response, error_response);
+	}
+	
+};
