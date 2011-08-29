@@ -3,6 +3,7 @@ var hide_label="Hide options &uarr;";
 var searchForms=[];
 var firstCall=true;
 var annotations=[];
+var items_per_page=5;
 (function( $ ){
 	$.fn.hider = function() {
 		return this.each(function(){
@@ -64,11 +65,16 @@ var error_response = function(){
  */
 var response = function(res){
 	var text = '';
+	var gotAnnotations=false;
 	try {
+		
 		annotations[res.GFF.SEGMENT[0].id] = res.GFF.SEGMENT[0].FEATURE;// getting all the annotations
 		text = '<br/>Proteins related with the protein '+res.GFF.SEGMENT[0].id+':<br/>';
 		
-		text += getDisplayPage(res.GFF.SEGMENT[0].id,0,10);
+		text += getDisplayPage(res.GFF.SEGMENT[0].id,0,100);
+		
+		text += '<div id="Pagination_'+res.GFF.SEGMENT[0].id+'"></div> <br style="clear:both;" /> <div id="Searchresult_'+res.GFF.SEGMENT[0].id+'">This content will be replaced when pagination inits.</div>';
+		gotAnnotations=true;
 	}catch(err){
 		text='<br/>The protein with id XXX doesn\'t have any probes linked in the knowledge base<br/>';
 	}
@@ -77,14 +83,42 @@ var response = function(res){
 		$('#results').html(text);
 	}else
 		$('#results').append(text);
+	if (gotAnnotations){
+		initPagination(res.GFF.SEGMENT[0].id);
+	}
 };
+function initPagination(divId) {
+    // count entries inside the hidden content
+    var num_entries = jQuery('#'+divId+' div.result').length;
+    // Create content inside pagination element
+    $("#Pagination_"+divId).pagination(num_entries, {
+        callback: pageselectCallback,
+        items_per_page:items_per_page,
+        load_first_page:true
+    });
+ }
+function pageselectCallback(page_index, jq){
+	var sep=jq.selector.indexOf("_");
+	if (sep!=-1){
+		var id=jq.selector.substr(sep+1);
+	    var num_entries = jQuery('#'+id+' div.result').length;
+	    $('#Searchresult_'+id).empty();
+		var max_elem = Math.min((page_index+1) * items_per_page, num_entries);
+		for(var i=page_index*items_per_page;i<max_elem;i++){
+		    var new_content = jQuery('#'+id+' div.result:eq('+i+')').clone();
+		    $('#Searchresult_'+id).append(new_content);
+		}
+		return false;
+	}
+    return false;
+}
 
 var getDisplayPage= function(key,from,amount){
-	var text = '<div id="'+key+'">';
-	if (annotations[key].length>amount){
-		text += 'Displaying '+amount+' results of '+annotations[key].length+"<br/>";
-		text += '<a>PREV</a>|<a>NEXT</a>';
-	}
+	var text = '<div id="'+key+'" style="display:none;">';
+//	if (annotations[key].length>amount){
+//		text += 'Displaying '+amount+' results of '+annotations[key].length+"<br/>";
+//		text += '<a>PREV</a>|<a>NEXT</a>';
+//	}
 	for (var i = from; i < annotations[key].length && i<from+amount; i++) {
 		text +='<div class="result">';
 		var ann = annotations[key][i];
