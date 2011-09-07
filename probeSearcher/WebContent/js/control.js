@@ -2,8 +2,10 @@ var show_label="Advance Search &darr;";
 var hide_label="Hide options &uarr;";
 var searchForms=[];
 var firstCall=true;
-var annotations=[];
+var annotations={};
 var items_per_page=5;
+var chips=[];
+
 (function( $ ){
 	$.fn.hider = function() {
 		return this.each(function(){
@@ -61,7 +63,7 @@ var error_response = function(){
 };
 
 /**
- *  This function print the annotations for the protein id P00280
+ *  This function print the annotations for the protein id 
  */
 var response = function(res){
 	var text = '';
@@ -71,7 +73,7 @@ var response = function(res){
 		annotations[res.GFF.SEGMENT[0].id] = res.GFF.SEGMENT[0].FEATURE;// getting all the annotations
 		text = '<br/>Proteins related with the protein '+res.GFF.SEGMENT[0].id+':<br/>';
 		
-		text += getDisplayPage(res.GFF.SEGMENT[0].id,0,100);
+		text += getDisplayPage(res.GFF.SEGMENT[0].id);
 		
 		text += '<div id="Pagination_'+res.GFF.SEGMENT[0].id+'"></div> <br style="clear:both;" /> <div id="Searchresult_'+res.GFF.SEGMENT[0].id+'">This content will be replaced when pagination inits.</div>';
 		gotAnnotations=true;
@@ -80,7 +82,11 @@ var response = function(res){
 	}
 	if (firstCall){
 		firstCall=false;
-		$('#results').html(text);
+		$('#results').html('<div id="sort_type" class="sort_link">(Group for Chips)</div>'+text);
+		$('#sort_type').click(function(){
+			$('#results').html('<img src="images/loading.gif" />');
+			groupByChips();
+		});
 	}else
 		$('#results').append(text);
 	if (gotAnnotations){
@@ -113,13 +119,9 @@ function pageselectCallback(page_index, jq){
     return false;
 }
 
-var getDisplayPage= function(key,from,amount){
+var getDisplayPage= function(key){
 	var text = '<div id="'+key+'" style="display:none;">';
-//	if (annotations[key].length>amount){
-//		text += 'Displaying '+amount+' results of '+annotations[key].length+"<br/>";
-//		text += '<a>PREV</a>|<a>NEXT</a>';
-//	}
-	for (var i = from; i < annotations[key].length && i<from+amount; i++) {
+	for (var i = 0; i < annotations[key].length; i++) {
 		text +='<div class="result">';
 		var ann = annotations[key][i];
 		text +='<a href="'+ann.LINK[0].href+'" target="_blank">'+ann.label+'</a><br/>';
@@ -139,4 +141,63 @@ var getProbes = function(str){
 		client.features({segment: ids[i]}, response, error_response);
 	}
 	
+};
+var groupByChips = function(){
+	var protein={};
+	for (protein in annotations){
+		for (var j = 0; j < annotations[protein].length; j++) {
+			var ann = annotations[protein][j];
+			if (chips[ann.TYPE.textContent] == undefined){
+				chips[ann.TYPE.textContent]={};
+			}
+			if (chips[ann.TYPE.textContent][protein] == undefined)
+				chips[ann.TYPE.textContent][protein]=[];
+			chips[ann.TYPE.textContent][protein].push(ann);
+		}
+	}
+	responseChips();
+};
+var responseChips = function(){
+	var text = '';
+
+	text = '<br/>Chips:<br/>';
+	
+	text += getDisplayChipPage(chips);
+	
+	text += '<div id="Pagination_group"></div> <br style="clear:both;" /> <div id="Searchresult_group">This content will be replaced when pagination inits.</div>';
+
+	$('#results').html('<div id="sort_type" class="sort_link">(Group for Protein)</div>'+text);
+	$('#sort_type').click(function(){
+		$('#results').html('<img src="images/loading.gif" />');
+		groupByProtein();
+	});
+	initPagination('group');
+};
+var getDisplayChipPage= function(chipGroup){
+	var text = '<div id="group" style="display:none;">';
+	for (chip in chipGroup){
+		var firstTime=true;
+		var anns = chipGroup[chip];
+		for (ann in anns){
+			if (firstTime){
+				text +='<div class="result">';
+				text +='<b>'+anns[ann][0].TYPE.textContent+'</b><br/>';
+				text +='<div class="result_item"> &#149; Type: XXXXX</div>';
+				text +='<div class="result_item"> &#149; Organism: '+anns[ann][0].TYPE.category+'</div>';
+				firstTime=false;
+			}
+			var probesByProt={};
+			for(var j=0;j<anns[ann].length;j++){
+				if (probesByProt[ann]==undefined)
+					probesByProt[ann]="";
+				probesByProt[ann] += ' <a href="'+anns[ann][j].LINK[0].href+'" target="_blank">'+anns[ann][j].label+'</a>,';
+			}
+				
+			for(prot in probesByProt)
+				text +='<div class="result_item"> &#149; '+prot+': '+probesByProt[prot].substr(1,probesByProt[prot].length-2)+'</div>';
+		}
+		text +='</div>';
+	}
+	text +='</div>';
+	return text;
 };
