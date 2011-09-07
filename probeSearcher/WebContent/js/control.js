@@ -5,6 +5,7 @@ var firstCall=true;
 var annotations={};
 var items_per_page=5;
 var chips=[];
+var ids=[];
 
 (function( $ ){
 	$.fn.hider = function() {
@@ -46,7 +47,7 @@ var chips=[];
 jQuery.parseIds = function(str){
 	var ids=str.split(",");
 	for (var i=0;i<ids.length;i++){
-		ids[i]=jQuery.trim(ids[i]);
+		ids[i]=jQuery.trim(ids[i]).toUpperCase();
 	}
 	return ids;
 };
@@ -136,7 +137,7 @@ var getDisplayPage= function(key){
 };
 
 var getProbes = function(str){
-	var ids=jQuery.parseIds(str);
+	ids=jQuery.parseIds(str);
 	for (var i=0;i<ids.length;i++){
 		client.features({segment: ids[i]}, response, error_response);
 	}
@@ -157,13 +158,34 @@ var groupByChips = function(){
 	}
 	responseChips();
 };
+var groupByProtein = function(){
+	var text = '';
+	for (var i in ids){
+		if (annotations[ids[i]]!=undefined) {
+			text += '<br/>Proteins related with the protein '+ids[i]+':<br/>';
+			
+			text += getDisplayPage(ids[i]);
+			
+			text += '<div id="Pagination_'+ids[i]+'"></div> <br style="clear:both;" /> <div id="Searchresult_'+ids[i]+'">This content will be replaced when pagination inits.</div>';
+			gotAnnotations=true;
+		}else{
+			text+='<br/>The protein with id '+ids[i]+' doesn\'t have any probes linked in the knowledge base<br/>';
+		}
+	}
+	$('#results').html('<div id="sort_type" class="sort_link">(Group for Chips)</div>'+text);
+	$('#sort_type').click(function(){
+		$('#results').html('<img src="images/loading.gif" />');
+		groupByChips();
+	});
+	for (var i in ids)
+		if (annotations[ids[i]]!=undefined) 
+			initPagination(ids[i]);
+};
+
 var responseChips = function(){
 	var text = '';
-
 	text = '<br/>Chips:<br/>';
-	
 	text += getDisplayChipPage(chips);
-	
 	text += '<div id="Pagination_group"></div> <br style="clear:both;" /> <div id="Searchresult_group">This content will be replaced when pagination inits.</div>';
 
 	$('#results').html('<div id="sort_type" class="sort_link">(Group for Protein)</div>'+text);
