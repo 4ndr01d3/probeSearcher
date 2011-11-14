@@ -6,7 +6,10 @@ var annotations={};
 var items_per_page=5;
 var chips=[];
 var ids=[];
-
+var species=["Homo sapiens", "Mus musculus", "Rattus norvegicus", "Danio rerio", "Drosophila melanogaster", "Caenorhabditis elegans", "Pan troglodytes", "Saccharomyces cerevisiae", "Bos taurus", "Gallus gallus"];
+var platforms={affy:"Affymetrix",illumina:"Illumina",agilent:"Agilent",eppendorf:"Eppendorf",phalanx:"Phalanx"};
+var currentQuery="";
+var currentType="u2p";
 (function( $ ){
 	$.fn.hider = function() {
 		return this.each(function(){
@@ -44,17 +47,31 @@ var ids=[];
 })( jQuery );
 
 
-jQuery.parseIds = function(str){
+jQuery.parseIds = function(str,case_type){
 	var ids=str.split(",");
 	for (var i=0;i<ids.length;i++){
-		ids[i]=jQuery.trim(ids[i]).toUpperCase();
+		switch (case_type){
+			case "UPPER":
+				ids[i]=jQuery.trim(ids[i]).toUpperCase();
+				break;
+			case "LOWER":
+				ids[i]=jQuery.trim(ids[i]).toLowerCase();
+				break;
+			default:
+				ids[i]=jQuery.trim(ids[i]);
+		}
 	}
 	return ids;
 };
 
 
-var server_url = 'http://www.ebi.ac.uk/enfin-srv/das-srv/das/uniprot2probes';
-var client = JSDAS.Simple.getClient(server_url);
+//var server_url = 'http://www.ebi.ac.uk/enfin-srv/das-srv/das/uniprot2probes';
+var server_url_u2p = 'http://127.0.0.1:8080/das-srv/das/uniprot2probes';
+var client_u2p = JSDAS.Simple.getClient(server_url_u2p);
+var server_url_p2u = 'http://127.0.0.1:8080/das-srv/das/probes2uniprot';
+var client_p2u = JSDAS.Simple.getClient(server_url_p2u);
+var server_url_e2p = 'http://127.0.0.1:8080/das-srv/das/ensembl2probes';
+var client_e2p = JSDAS.Simple.getClient(server_url_e2p);
 
 /**
  * This function will be executed in case of error
@@ -67,38 +84,46 @@ var error_response = function(){
  *  This function print the annotations for the protein id 
  */
 var response = function(res){
+	if (firstCall) annotations={};
 	var text = '';
 	var gotAnnotations=false;
+	var subtitle="Probe sets related with the protein ";
+	if (currentType=="p2u")
+		subtitle="proteins related with the probe set ";
+	else if (currentType=="e2u")
+		subtitle="Probe sets related with the gene ";
 	try {
-		
-		annotations[res.GFF.SEGMENT[0].id] = res.GFF.SEGMENT[0].FEATURE;// getting all the annotations
-		text = '<br/>Proteins related with the protein '+res.GFF.SEGMENT[0].id+':<br/>';
-		
-		text += getDisplayPage(res.GFF.SEGMENT[0].id);
-		
-		text += '<div id="Pagination_'+res.GFF.SEGMENT[0].id+'"></div> <br style="clear:both;" /> <div id="Searchresult_'+res.GFF.SEGMENT[0].id+'">This content will be replaced when pagination inits.</div>';
-		gotAnnotations=true;
+		for (var i=0;i<res.GFF.SEGMENT.length;i++){
+			annotations[res.GFF.SEGMENT[i].id] = res.GFF.SEGMENT[i].FEATURE;// getting all the annotations
+			text = '<br/><br/>'+subtitle+res.GFF.SEGMENT[i].id+':<br/>';
+			
+			text += getDisplayPage(res.GFF.SEGMENT[i].id);
+			
+			text += '<div id="Pagination_'+res.GFF.SEGMENT[i].id+'"></div> <br style="clear:both;" /> <div id="Searchresult_'+res.GFF.SEGMENT[i].id+'">This content will be replaced when pagination inits.</div>';
+			gotAnnotations=true;
+		}
 	}catch(err){
-		text='<br/>The protein with id XXX doesn\'t have any probes linked in the knowledge base<br/>';
+		text='<br/>The query ('+currentQuery+') didnt bring any results for this protein<br/>';
 	}
 	if (firstCall){
 		firstCall=false;
 		$('#results').html('<div id="sort_type" class="sort_link">(Group for Chips)</div>'+text);
 		$('#sort_type').click(function(){
-			$('#results').html('<img src="images/loading.gif" />');
+			$('#results').html('<progress>working...</progress>');
 			groupByChips();
 		});
 	}else
 		$('#results').append(text);
 	if (gotAnnotations){
-		initPagination(res.GFF.SEGMENT[0].id);
+		for (var i=0;i<res.GFF.SEGMENT.length;i++)
+			initPagination(res.GFF.SEGMENT[i].id);
 	}
 };
 function initPagination(divId) {
     // count entries inside the hidden content
-    var num_entries = jQuery('#'+divId+' div.result').length;
+    var num_entries = jQuery('#'+divId.replace(".", "\\.")+' div.result').length;
     // Create content inside pagination element
-    $("#Pagination_"+divId).pagination(num_entries, {
+    $("#Pagination_"+divId.replace(".", "\\.")).pagination(num_entries, {
         callback: pageselectCallback,
         items_per_page:items_per_page,
         load_first_page:true
@@ -121,6 +146,7 @@ function pageselectCallback(page_index, jq){
 }
 
 var getDisplayPage= function(key){
+
 	var text = '<div id="'+key+'" style="display:none;">';
 	for (var i = 0; i < annotations[key].length; i++) {
 		text +='<div class="result">';
@@ -136,16 +162,80 @@ var getDisplayPage= function(key){
 	return text;
 };
 
-var getProbes = function(str){
-	ids=jQuery.parseIds(str);
-	for (var i=0;i<ids.length;i++){
-		client.features({segment: ids[i]}, response, error_response);
+var getProbes = function(str, type){
+	currentQuery=str;
+	currentType=type;
+	switch(type){
+		case "u2p":
+			ids=jQuery.parseIds(str,"UPPER");
+			if ($('#platform_'+type).val()=="Any" && $('#organism_'+type).val()=="Any"){
+				for (var i=0;i<ids.length;i++){
+					client_u2p.features({segment: ids[i]}, response, error_response);
+				}
+				return;
+			}
+			var query="",sep="";
+			for (var i=0;i<ids.length;i++){
+				query += sep+"segmentId:"+ids[i];
+				sep = " OR ";
+			}
+			if ($('#platform_'+type).val()!="Any"){
+				if (query!="") query = "("+query+") AND ";
+				query += "typeId:"+$('#platform_'+type).val()+"*";
+			}
+			if ($('#organism_'+type).val()!="Any"){
+				if (query!="") query = "("+query+") AND ";
+				query += "typeCategory:\""+$('#organism_'+type).val()+"\"";
+			}
+			$('#results').html(query);
+			break;
+		case "p2u":
+			ids=jQuery.parseIds(str);
+			if ($('#organism_'+type).val()=="Any"){
+				for (var i=0;i<ids.length;i++){
+					client_p2u.features({segment: ids[i]}, response, error_response);
+				}
+				return;
+			}
+			var query="",sep="";
+			for (var i=0;i<ids.length;i++){
+				query += sep+"segmentId:"+ids[i];
+				sep = " OR ";
+			}
+			if ($('#organism_'+type).val()!="Any"){
+				if (query!="") query = "("+query+") AND ";
+				query += "typeCategory:\""+$('#organism_'+type).val()+"\"";
+			}
+			$('#results').html(query);
+			break;
+		case "e2p":
+			ids=jQuery.parseIds(str,"UPPER");
+			if ($('#platform_'+type).val()=="Any" && $('#organism_'+type).val()=="Any"){
+				for (var i=0;i<ids.length;i++){
+					client_e2p.features({segment: ids[i]}, response, error_response);
+				}
+				return;
+			}
+			var query="",sep="";
+			for (var i=0;i<ids.length;i++){
+				query += sep+"segmentId:"+ids[i];
+				sep = " OR ";
+			}
+			if ($('#platform_'+type).val()!="Any"){
+				if (query!="") query = "("+query+") AND ";
+				query += "typeId:"+$('#platform_'+type).val()+"*";
+			}
+			if ($('#organism_'+type).val()!="Any"){
+				if (query!="") query = "("+query+") AND ";
+				query += "typeCategory:\""+$('#organism_'+type).val()+"\"";
+			}
+			$('#results').html(query);
+			break;
 	}
-	
 };
 var groupByChips = function(){
-	var protein={};
-	for (protein in annotations){
+	chips=[];
+	for (var protein in annotations){
 		for (var j = 0; j < annotations[protein].length; j++) {
 			var ann = annotations[protein][j];
 			if (chips[ann.TYPE.textContent] == undefined){
@@ -160,26 +250,32 @@ var groupByChips = function(){
 };
 var groupByProtein = function(){
 	var text = '';
-	for (var i in ids){
-		if (annotations[ids[i]]!=undefined) {
-			text += '<br/>Proteins related with the protein '+ids[i]+':<br/>';
+	for (var ann in annotations){
+//	for (var i in ids){
+		if (annotations[ann]!=undefined) {
+			text += '<br/><br/>Proteins related with the protein '+ann+':<br/>';
 			
-			text += getDisplayPage(ids[i]);
+			text += getDisplayPage(ann);
 			
-			text += '<div id="Pagination_'+ids[i]+'"></div> <br style="clear:both;" /> <div id="Searchresult_'+ids[i]+'">This content will be replaced when pagination inits.</div>';
+			text += '<div id="Pagination_'+ann+'"></div> <br style="clear:both;" /> <div id="Searchresult_'+ann+'">This content will be replaced when pagination inits.</div>';
 			gotAnnotations=true;
-		}else{
-			text+='<br/>The protein with id '+ids[i]+' doesn\'t have any probes linked in the knowledge base<br/>';
 		}
+	}
+	for (var id in ids){
+		var found=false;
+		for (var ann in annotations)
+			if (ann.indexOf(ids[id])==0)
+				found=true;
+		if (!found )text+='<br/>The protein with id '+ids[id]+' doesn\'t have any probes linked in the knowledge base<br/>';
 	}
 	$('#results').html('<div id="sort_type" class="sort_link">(Group for Chips)</div>'+text);
 	$('#sort_type').click(function(){
-		$('#results').html('<img src="images/loading.gif" />');
+		$('#results').html('<progress>working...</progress>');
 		groupByChips();
 	});
-	for (var i in ids)
-		if (annotations[ids[i]]!=undefined) 
-			initPagination(ids[i]);
+	for (var ann in annotations)
+		if (annotations[ann]!=undefined) 
+			initPagination(ann);
 };
 
 var responseChips = function(){
@@ -188,11 +284,25 @@ var responseChips = function(){
 	text += getDisplayChipPage(chips);
 	text += '<div id="Pagination_group"></div> <br style="clear:both;" /> <div id="Searchresult_group">This content will be replaced when pagination inits.</div>';
 
-	$('#results').html('<div id="sort_type" class="sort_link">(Group for Protein)</div>'+text);
-	$('#sort_type').click(function(){
-		$('#results').html('<img src="images/loading.gif" />');
-		groupByProtein();
-	});
+	if (currentType=="u2p"){
+		$('#results').html('<div id="sort_type" class="sort_link">(Group for Protein)</div>'+text);
+		$('#sort_type').click(function(){
+			$('#results').html('<progress>working...</progress>');
+			groupByProtein();
+		});
+	}else if (currentType=="p2u"){
+		$('#results').html('<div id="sort_type" class="sort_link">(Group for Probes)</div>'+text);
+		$('#sort_type').click(function(){
+			$('#results').html('<progress>working...</progress>');
+			groupByProtein();
+		});
+	}else if (currentType=="e2p"){
+		$('#results').html('<div id="sort_type" class="sort_link">(Group for Genes)</div>'+text);
+		$('#sort_type').click(function(){
+			$('#results').html('<progress>working...</progress>');
+			groupByProtein();
+		});
+	}
 	initPagination('group');
 };
 var getDisplayChipPage= function(chipGroup){
@@ -200,7 +310,7 @@ var getDisplayChipPage= function(chipGroup){
 	for (chip in chipGroup){
 		var firstTime=true;
 		var anns = chipGroup[chip];
-		for (ann in anns){
+		for (var ann in anns){
 			if (firstTime){
 				text +='<div class="result">';
 				text +='<b>'+anns[ann][0].TYPE.textContent+'</b><br/>';
@@ -223,3 +333,28 @@ var getDisplayChipPage= function(chipGroup){
 	text +='</div>';
 	return text;
 };
+
+(function( $ ){
+	$.fn.fillOrganisms = function() {
+		return this.each(function(){
+			$(this).empty();
+			$(this).append('<option value="Any">Any</option>');
+			for (var i=0;i<species.length;i++){
+				$(this).append('<option value="'+species[i]+'">'+species[i]+'</option>');
+			}
+
+		});
+	};
+})( jQuery );
+(function( $ ){
+	$.fn.fillPlatforms = function() {
+		return this.each(function(){
+			$(this).empty();
+			$(this).append('<option value="Any">Any</option>');
+			for (var key in platforms){
+				$(this).append('<option value="'+key+'">'+platforms[key]+'</option>');
+			}
+
+		});
+	};
+})( jQuery );

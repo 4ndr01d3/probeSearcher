@@ -97,14 +97,19 @@ div.hide_show_link:hover {
 }
 div.sort_link {
 	display:block;
-    color:#5444ED;
-    padding-bottom:10px;
+    color:white;
+    padding:2px;
+    padding-bottom:8px;
     font-size:70%;
+    background-color:#AF4040;
+    width: 120px;
+    text-align: center;
 }
 div.sort_link:hover {
 	text-decoration: underline; 
-	color: red;
+	font-weight:bold;
 	cursor:pointer;
+    background-color:#BF5050;
 }
 section.search_forms textarea {
 	width:98%;

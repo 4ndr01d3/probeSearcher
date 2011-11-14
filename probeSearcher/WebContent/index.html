@@ -20,13 +20,10 @@
 					<br />
 					<div id="advanced_u2p">
 						<div id="advanced_u2p_target">
-							Platform:<br /> <select id="platform">
-								<option value="affymetrix">Affymetrix</option>
-								<option value="illumina">Illumina</option>
-								<option value="agilent">Agilent</option>
-								<option value="applied">Applied Microarrays</option>
-								<option value="ependorf">Eppendorf</option>
-							</select><br /> Type:<br /> <select id="type">
+							Platform:<br /> 
+							<select id="platform_u2p" class="platform_list"></select><br /> 
+<!--							Type:<br /> 
+							<select id="type">
 								<option value="fullgenome">Full Genome Array</option>
 								<option value="mirna">miRNA Array</option>
 								<option value="snp">SNP Array</option>
@@ -36,11 +33,10 @@
 								<option value="promoter">Promoter Array</option>
 								<option value="exon">Exon Array</option>
 								<option value="gene">Gene Array</option>
-							</select><br /> Organism:<br /> <select id="organism">
-								<option value="homo sapiens">Homo sapiens</option>
-								<option value="mus musculus">Mus musculus</option>
-								<option value="danio rerio">Danio rerio</option>
-							</select><br />
+							</select><br /> 
+  -->
+  							Organism:<br /> 
+							<select id="organism_u2p" class="organism_list"></select><br />
 						</div>
 						<div id="advanced_u2p_link"></div>
 						<br />
@@ -55,31 +51,19 @@
 				<header>Probes2Uniprot</header>
 				<form>
 					Probes:<br />
-					<textarea rows="5" id="probes" autofocus></textarea>
+					<textarea rows="5" id="probes_p2u" autofocus></textarea>
 					<br />
 					<div id="advanced_p2u">
 						<div id="advanced_p2u_target">
-							Type:<br /> <select id="type">
-								<option value="fullgenome">Full Genome Array</option>
-								<option value="mirna">miRNA Array</option>
-								<option value="snp">SNP Array</option>
-								<option value="universal">Universal Tag Array</option>
-								<option value="expression">Expression Set Array</option>
-								<option value="chomosome">Chromosome Array</option>
-								<option value="promoter">Promoter Array</option>
-								<option value="exon">Exon Array</option>
-								<option value="gene">Gene Array</option>
-							</select><br /> Organism:<br /> <select id="organism">
-								<option value="homo sapiens">Homo sapiens</option>
-								<option value="mus musculus">Mus musculus</option>
-								<option value="danio rerio">Danio rerio</option>
+							Organism:<br /> 
+							<select id="organism_p2u" class="organism_list">
 							</select><br />
 						</div>
 						<div id="advanced_p2u_link"></div>
 						<br />
 					</div>
 					<div class="buttons">
-						<input type="button" title="get Proteins" value="get Probes" />
+						<input id="getProbes_p2u" type="button" title="get Proteins" value="get Proteins" />
 					</div>
 				</form>
 			</section>
@@ -87,38 +71,20 @@
 				<header>Ensembl2Probes</header>
 				<form>
 					Ensembl ids:<br />
-					<textarea rows="5" id="ensmbl" autofocus></textarea>
+					<textarea rows="5" id="ensmbl2p" autofocus></textarea>
 					<br />
 					<div id="advanced_e2p">
 						<div id="advanced_e2p_target">
-							Platform:<br /> <select id="platform">
-								<option value="affymetrix">Affymetrix</option>
-								<option value="illumina">Illumina</option>
-								<option value="agilent">Agilent</option>
-								<option value="applied">Applied Microarrays</option>
-								<option value="ependorf">Eppendorf</option>
-							</select><br /> Type:<br /> <select id="type">
-								<option value="fullgenome">Full Genome Array</option>
-								<option value="mirna">miRNA Array</option>
-								<option value="snp">SNP Array</option>
-								<option value="universal">Universal Tag Array</option>
-								<option value="expression">Expression Set Array</option>
-								<option value="chomosome">Chromosome Array</option>
-								<option value="promoter">Promoter Array</option>
-								<option value="exon">Exon Array</option>
-								<option value="gene">Gene Array</option>
-							</select><br /> Organism:<br /> <select id="organism">
-								<option value="homo sapiens">Homo sapiens</option>
-								<option value="mus musculus">Mus musculus</option>
-								<option value="danio rerio">Danio rerio</option>
-							</select><br />
+							Platform:<br /> 
+							<select id="platform_e2p" class="platform_list"></select><br />
+							Organism:<br /> 
+							<select id="organism_e2p" class="organism_list"></select><br />
 						</div>
 						<div id="advanced_e2p_link"></div>
 						<br />
 					</div>
 					<div class="buttons">
-						<input type="button" title="get Probes" value="get Probes" /> <input
-							type="button" title="get Chips" value="get Chips" />
+						<input id="getProbes_e2p" type="button" title="get Probes" value="get Probes" /> 
 					</div>
 				</form>
 			</section>
@@ -130,21 +96,8 @@
 					<br />
 					<div id="advanced_p2e">
 						<div id="advanced_p2e_target">
-							Type:<br /> <select id="type">
-								<option value="fullgenome">Full Genome Array</option>
-								<option value="mirna">miRNA Array</option>
-								<option value="snp">SNP Array</option>
-								<option value="universal">Universal Tag Array</option>
-								<option value="expression">Expression Set Array</option>
-								<option value="chomosome">Chromosome Array</option>
-								<option value="promoter">Promoter Array</option>
-								<option value="exon">Exon Array</option>
-								<option value="gene">Gene Array</option>
-							</select><br /> Organism:<br /> <select id="organism">
-								<option value="homo sapiens">Homo sapiens</option>
-								<option value="mus musculus">Mus musculus</option>
-								<option value="danio rerio">Danio rerio</option>
-							</select><br />
+							Organism:<br /> 
+							<select id="organism_p2e"  class="organism_list"></select><br />
 						</div>
 						<div id="advanced_p2e_link"></div>
 						<br />
@@ -161,6 +114,8 @@
 			</section>
 		</section>
 		<script type="text/javascript">
+			$('.organism_list').fillOrganisms();
+			$('.platform_list').fillPlatforms();
 			$('#advanced_u2p').hider();
 			$('#advanced_p2u').hider();
 			$('#advanced_e2p').hider();
@@ -171,8 +126,18 @@
 			$('#probes2ensembl').topForm();
 			$('#getProbes_u2p').click(function(){
 				firstCall=true;
-				$('#results').html('<img src="images/loading.gif" />');
-				getProbes($('#proteins_u2p').val());
+				$('#results').html('<progress>working...</progress>');
+				getProbes($('#proteins_u2p').val(),"u2p");
+			});
+			$('#getProbes_p2u').click(function(){
+				firstCall=true;
+				$('#results').html('<progress>working...</progress>');
+				getProbes($('#probes_p2u').val(),"p2u");
+			});
+			$('#getProbes_e2p').click(function(){
+				firstCall=true;
+				$('#results').html('<progress>working...</progress>');
+				getProbes($('#ensmbl2p').val(),"e2p");
 			});
 		</script>
 	</body>
