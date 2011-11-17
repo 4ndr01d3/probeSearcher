@@ -72,6 +72,8 @@ var server_url_p2u = 'http://127.0.0.1:8080/das-srv/das/probes2uniprot';
 var client_p2u = JSDAS.Simple.getClient(server_url_p2u);
 var server_url_e2p = 'http://127.0.0.1:8080/das-srv/das/ensembl2probes';
 var client_e2p = JSDAS.Simple.getClient(server_url_e2p);
+var server_url_p2e = 'http://127.0.0.1:8080/das-srv/das/probes2ensembl';
+var client_p2e = JSDAS.Simple.getClient(server_url_p2e);
 
 /**
  * This function will be executed in case of error
@@ -89,7 +91,7 @@ var response = function(res){
 	var gotAnnotations=false;
 	var subtitle="Probe sets related with the protein ";
 	if (currentType=="p2u")
-		subtitle="proteins related with the probe set ";
+		subtitle="Proteins related with the probe set ";
 	else if (currentType=="e2u")
 		subtitle="Probe sets related with the gene ";
 	try {
@@ -153,9 +155,9 @@ var getDisplayPage= function(key){
 		var ann = annotations[key][i];
 		text +='<a href="'+ann.LINK[0].href+'" target="_blank">'+ann.label+'</a><br/>';
 		text +='<div class="result_item"> &#149; Chip: '+ann.TYPE.textContent+'</div>';
-		text +='<div class="result_item"> &#149; Type: XXXXX</div>';
+//		text +='<div class="result_item"> &#149; Type: XXXXX</div>';
 		text +='<div class="result_item"> &#149; Organism: '+ann.TYPE.category+'</div>';
-		text +='<div class="result_item"> &#149; Sequence: XXXXX</div>';
+//		text +='<div class="result_item"> &#149; Sequence: XXXXX</div>';
 		text +='</div>';
 	}
 	text +='</div>';
@@ -231,6 +233,25 @@ var getProbes = function(str, type){
 			}
 			$('#results').html(query);
 			break;
+		case "p2e":
+			ids=jQuery.parseIds(str);
+			if ($('#organism_'+type).val()=="Any"){
+				for (var i=0;i<ids.length;i++){
+					client_p2e.features({segment: ids[i]}, response, error_response);
+				}
+				return;
+			}
+			var query="",sep="";
+			for (var i=0;i<ids.length;i++){
+				query += sep+"segmentId:"+ids[i];
+				sep = " OR ";
+			}
+			if ($('#organism_'+type).val()!="Any"){
+				if (query!="") query = "("+query+") AND ";
+				query += "typeCategory:\""+$('#organism_'+type).val()+"\"";
+			}
+			$('#results').html(query);
+			break;
 	}
 };
 var groupByChips = function(){
@@ -253,7 +274,15 @@ var groupByProtein = function(){
 	for (var ann in annotations){
 //	for (var i in ids){
 		if (annotations[ann]!=undefined) {
-			text += '<br/><br/>Proteins related with the protein '+ann+':<br/>';
+			if (currentType=="u2p")
+				text += '<br/><br/>Probes related with the protein '+ann+':<br/>';
+			else if (currentType=="p2u")
+				text += '<br/><br/>Proteins related with the probe '+ann+':<br/>';
+			else if (currentType=="e2p")
+				text += '<br/><br/>Probes related with the gene '+ann+':<br/>';
+			else if (currentType=="p2e")
+				text += '<br/><br/>Genes related with the probe '+ann+':<br/>';
+ 
 			
 			text += getDisplayPage(ann);
 			
@@ -302,6 +331,12 @@ var responseChips = function(){
 			$('#results').html('<progress>working...</progress>');
 			groupByProtein();
 		});
+	}else if (currentType=="p2e"){
+		$('#results').html('<div id="sort_type" class="sort_link">(Group for Probes)</div>'+text);
+		$('#sort_type').click(function(){
+			$('#results').html('<progress>working...</progress>');
+			groupByProtein();
+		});
 	}
 	initPagination('group');
 };
@@ -314,7 +349,7 @@ var getDisplayChipPage= function(chipGroup){
 			if (firstTime){
 				text +='<div class="result">';
 				text +='<b>'+anns[ann][0].TYPE.textContent+'</b><br/>';
-				text +='<div class="result_item"> &#149; Type: XXXXX</div>';
+//				text +='<div class="result_item"> &#149; Type: XXXXX</div>';
 				text +='<div class="result_item"> &#149; Organism: '+anns[ann][0].TYPE.category+'</div>';
 				firstTime=false;
 			}

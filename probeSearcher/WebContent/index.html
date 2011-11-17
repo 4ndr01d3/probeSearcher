@@ -71,7 +71,7 @@
 				<header>Ensembl2Probes</header>
 				<form>
 					Ensembl ids:<br />
-					<textarea rows="5" id="ensmbl2p" autofocus></textarea>
+					<textarea rows="5" id="ensmbl_e2p" autofocus></textarea>
 					<br />
 					<div id="advanced_e2p">
 						<div id="advanced_e2p_target">
@@ -92,7 +92,7 @@
 				<header>Probes2Ensembl</header>
 				<form>
 					Ensembl ids:<br />
-					<textarea rows="5" id="ensmbl" autofocus></textarea>
+					<textarea rows="5" id="ensmbl_p2e" autofocus></textarea>
 					<br />
 					<div id="advanced_p2e">
 						<div id="advanced_p2e_target">
@@ -103,7 +103,7 @@
 						<br />
 					</div>
 					<div class="buttons">
-						<input type="button" title="get Genes" value="get Probes" />
+						<input id="getProbes_p2e" type="button" title="get Genes" value="get Probes" />
 					</div>
 				</form>
 			</section>
@@ -137,7 +137,12 @@
 			$('#getProbes_e2p').click(function(){
 				firstCall=true;
 				$('#results').html('<progress>working...</progress>');
-				getProbes($('#ensmbl2p').val(),"e2p");
+				getProbes($('#ensmbl_e2p').val(),"e2p");
+			});
+			$('#getProbes_p2e').click(function(){
+				firstCall=true;
+				$('#results').html('<progress>working...</progress>');
+				getProbes($('#ensmbl_p2e').val(),"p2e");
 			});
 		</script>
 	</body>
