@@ -95,6 +95,17 @@ div.hide_show_link:hover {
 	color: red;
 	cursor:pointer;
 }
+span.examples{
+    font-size:70%;
+}
+a.example {
+    color:#5444ED;
+}
+a.example:hover {
+	text-decoration: underline; 
+	color: red;
+	cursor:pointer;
+}
 div.sort_link {
 	display:block;
     color:white;

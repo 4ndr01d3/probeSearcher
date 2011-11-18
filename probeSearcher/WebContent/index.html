@@ -9,13 +9,14 @@
 		<script type="text/javascript" src="js/jsdas.0.1.6.min.js"></script>
 		<script type="text/javascript" src="js/control.js"></script>
         <script type="text/javascript" src="js/jquery.pagination.js"></script>
-		</head>
+        <link rel="shortcut icon" href="http://cbio.uct.ac.za/favicon.ico" />
+	</head>
 	<body>
 		<section class="inner_frame">
 			<section id="uniprot2probes" class="search_forms">
 				<header>Uniprot2Probes</header>
 				<form>
-					Proteins:<br />
+					Proteins <span id="examples_u2p" class="examples">(e.g. <a class="example">P05067</a>, <a class="example">P99999</a>, <a class="example">P69905</a>)</span>:<br />
 					<textarea rows="5" id="proteins_u2p" autofocus></textarea>
 					<br />
 					<div id="advanced_u2p">
@@ -50,7 +51,7 @@
 			<section id="probes2uniprot" class="search_forms">
 				<header>Probes2Uniprot</header>
 				<form>
-					Probes:<br />
+					Probes <span id="examples_p2u" class="examples">(e.g. <a class="example">208905_at</a>, <a class="example">A_23_P37856</a>, <a class="example">ILMN_1730416</a>)</span>:<br />
 					<textarea rows="5" id="probes_p2u" autofocus></textarea>
 					<br />
 					<div id="advanced_p2u">
@@ -70,7 +71,7 @@
 			<section id="ensembl2probes" class="search_forms">
 				<header>Ensembl2Probes</header>
 				<form>
-					Ensembl ids:<br />
+					Ensembl <span id="examples_e2p" class="examples">(e.g. <a class="example">ENSG00000169246</a>, <a class="example">ENSG00000206172</a>)</span>:<br />
 					<textarea rows="5" id="ensmbl_e2p" autofocus></textarea>
 					<br />
 					<div id="advanced_e2p">
@@ -91,7 +92,7 @@
 			<section id="probes2ensembl" class="search_forms">
 				<header>Probes2Ensembl</header>
 				<form>
-					Ensembl ids:<br />
+					Probes <span id="examples_p2e" class="examples">(e.g. <a class="example">8000676</a>, <a class="example">ILMN_1725881</a>, <a class="example">PH_hs_0035119</a>)</span>:<br />
 					<textarea rows="5" id="ensmbl_p2e" autofocus></textarea>
 					<br />
 					<div id="advanced_p2e">
@@ -124,6 +125,10 @@
 			$('#probes2uniprot').topForm();
 			$('#ensembl2probes').topForm();
 			$('#probes2ensembl').topForm();
+			$('#examples_u2p > a.example').addExample('proteins_u2p');
+			$('#examples_p2u > a.example').addExample('probes_p2u');
+			$('#examples_e2p > a.example').addExample('ensmbl_e2p');
+			$('#examples_p2e > a.example').addExample('ensmbl_p2e');
 			$('#getProbes_u2p').click(function(){
 				firstCall=true;
 				$('#results').html('<progress>working...</progress>');

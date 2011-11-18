@@ -109,7 +109,7 @@ var response = function(res){
 	}
 	if (firstCall){
 		firstCall=false;
-		$('#results').html('<div id="sort_type" class="sort_link">(Group for Chips)</div>'+text);
+		$('#results').html('<div id="sort_type" class="sort_link">(Group by Chips)</div>'+text);
 		$('#sort_type').click(function(){
 			$('#results').html('<progress>working...</progress>');
 			groupByChips();
@@ -297,7 +297,7 @@ var groupByProtein = function(){
 				found=true;
 		if (!found )text+='<br/>The protein with id '+ids[id]+' doesn\'t have any probes linked in the knowledge base<br/>';
 	}
-	$('#results').html('<div id="sort_type" class="sort_link">(Group for Chips)</div>'+text);
+	$('#results').html('<div id="sort_type" class="sort_link">(Group by Chips)</div>'+text);
 	$('#sort_type').click(function(){
 		$('#results').html('<progress>working...</progress>');
 		groupByChips();
@@ -314,25 +314,25 @@ var responseChips = function(){
 	text += '<div id="Pagination_group"></div> <br style="clear:both;" /> <div id="Searchresult_group">This content will be replaced when pagination inits.</div>';
 
 	if (currentType=="u2p"){
-		$('#results').html('<div id="sort_type" class="sort_link">(Group for Protein)</div>'+text);
+		$('#results').html('<div id="sort_type" class="sort_link">(Group by Protein)</div>'+text);
 		$('#sort_type').click(function(){
 			$('#results').html('<progress>working...</progress>');
 			groupByProtein();
 		});
 	}else if (currentType=="p2u"){
-		$('#results').html('<div id="sort_type" class="sort_link">(Group for Probes)</div>'+text);
+		$('#results').html('<div id="sort_type" class="sort_link">(Group by Probes)</div>'+text);
 		$('#sort_type').click(function(){
 			$('#results').html('<progress>working...</progress>');
 			groupByProtein();
 		});
 	}else if (currentType=="e2p"){
-		$('#results').html('<div id="sort_type" class="sort_link">(Group for Genes)</div>'+text);
+		$('#results').html('<div id="sort_type" class="sort_link">(Group by Genes)</div>'+text);
 		$('#sort_type').click(function(){
 			$('#results').html('<progress>working...</progress>');
 			groupByProtein();
 		});
 	}else if (currentType=="p2e"){
-		$('#results').html('<div id="sort_type" class="sort_link">(Group for Probes)</div>'+text);
+		$('#results').html('<div id="sort_type" class="sort_link">(Group by Probes)</div>'+text);
 		$('#sort_type').click(function(){
 			$('#results').html('<progress>working...</progress>');
 			groupByProtein();
@@ -393,3 +393,19 @@ var getDisplayChipPage= function(chipGroup){
 		});
 	};
 })( jQuery );
+
+(function( $ ){
+	$.fn.addExample = function(target) {
+		return this.each(function(){
+			var self=this;
+			$(this).click(function(){
+				var textA= $("#"+target);
+				if ($.trim(textA.val())!="")
+					textA.val(textA.val()+", "+self.innerText);
+				else
+					textA.val(self.innerText);
+			});
+		});
+	};
+})( jQuery );
+
