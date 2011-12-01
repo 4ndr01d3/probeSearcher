@@ -1,3 +1,5 @@
+var server_url = 'http://oware.cbio.uct.ac.za/das-srv/das/';
+
 var show_label="Advance Search &darr;";
 var hide_label="Hide options &uarr;";
 var searchForms=[];
@@ -10,6 +12,8 @@ var species=["Homo sapiens", "Mus musculus", "Rattus norvegicus", "Danio rerio",
 var platforms={affy:"Affymetrix",illumina:"Illumina",agilent:"Agilent",eppendorf:"Eppendorf",phalanx:"Phalanx"};
 var currentQuery="";
 var currentType="u2p";
+var ALL=9999999;
+
 (function( $ ){
 	$.fn.hider = function() {
 		return this.each(function(){
@@ -65,14 +69,13 @@ jQuery.parseIds = function(str,case_type){
 };
 
 
-//var server_url = 'http://www.ebi.ac.uk/enfin-srv/das-srv/das/uniprot2probes';
-var server_url_u2p = 'http://127.0.0.1:8080/das-srv/das/uniprot2probes';
+var server_url_u2p = server_url+'uniprot2probes';
 var client_u2p = JSDAS.Simple.getClient(server_url_u2p);
-var server_url_p2u = 'http://127.0.0.1:8080/das-srv/das/probes2uniprot';
+var server_url_p2u = server_url+'probes2uniprot';
 var client_p2u = JSDAS.Simple.getClient(server_url_p2u);
-var server_url_e2p = 'http://127.0.0.1:8080/das-srv/das/ensembl2probes';
+var server_url_e2p = server_url+'ensembl2probes';
 var client_e2p = JSDAS.Simple.getClient(server_url_e2p);
-var server_url_p2e = 'http://127.0.0.1:8080/das-srv/das/probes2ensembl';
+var server_url_p2e = server_url+'probes2ensembl';
 var client_p2e = JSDAS.Simple.getClient(server_url_p2e);
 
 /**
@@ -109,7 +112,7 @@ var response = function(res){
 	}
 	if (firstCall){
 		firstCall=false;
-		$('#results').html('<div id="sort_type" class="sort_link">(Group by Chips)</div>'+text);
+		$('#results').html('<div id="sort_type" class="sort_link">(Group by Chips)</div><div id="list_size" class="size_selector" />'+text);
 		$('#sort_type').click(function(){
 			$('#results').html('<progress>working...</progress>');
 			groupByChips();
@@ -119,11 +122,14 @@ var response = function(res){
 	if (gotAnnotations){
 		for (var i=0;i<res.GFF.SEGMENT.length;i++)
 			initPagination(res.GFF.SEGMENT[i].id);
+		$('#list_size').listSizeSelector();
 	}
 };
 function initPagination(divId) {
     // count entries inside the hidden content
     var num_entries = jQuery('#'+divId.replace(".", "\\.")+' div.result').length;
+    if (items_per_page=="All")
+    	items_per_page=ALL;
     // Create content inside pagination element
     $("#Pagination_"+divId.replace(".", "\\.")).pagination(num_entries, {
         callback: pageselectCallback,
@@ -297,11 +303,13 @@ var groupByProtein = function(){
 				found=true;
 		if (!found )text+='<br/>The protein with id '+ids[id]+' doesn\'t have any probes linked in the knowledge base<br/>';
 	}
-	$('#results').html('<div id="sort_type" class="sort_link">(Group by Chips)</div>'+text);
+	$('#results').html('<div id="sort_type" class="sort_link">(Group by Chips)</div><div id="list_size" class="size_selector" />'+text);
 	$('#sort_type').click(function(){
 		$('#results').html('<progress>working...</progress>');
 		groupByChips();
 	});
+	$('#list_size').listSizeSelector();
+
 	for (var ann in annotations)
 		if (annotations[ann]!=undefined) 
 			initPagination(ann);
@@ -309,7 +317,7 @@ var groupByProtein = function(){
 
 var responseChips = function(){
 	var text = '';
-	text = '<br/>Chips:<br/>';
+	text = '<div id="list_size" class="size_selector" /><br/>Chips:<br/>';
 	text += getDisplayChipPage(chips);
 	text += '<div id="Pagination_group"></div> <br style="clear:both;" /> <div id="Searchresult_group">This content will be replaced when pagination inits.</div>';
 
@@ -338,6 +346,7 @@ var responseChips = function(){
 			groupByProtein();
 		});
 	}
+	$('#list_size').listSizeSelector();
 	initPagination('group');
 };
 var getDisplayChipPage= function(chipGroup){
@@ -401,11 +410,38 @@ var getDisplayChipPage= function(chipGroup){
 			$(this).click(function(){
 				var textA= $("#"+target);
 				if ($.trim(textA.val())!="")
-					textA.val(textA.val()+", "+self.innerText);
+					textA.val(textA.val()+", "+self.innerHTML);
 				else
-					textA.val(self.innerText);
+					textA.val(self.innerHTML);
 			});
 		});
 	};
 })( jQuery );
 
+(function( $ ){
+	$.fn.listSizeSelector = function() {
+		return this.each(function(){
+			var self=this;
+			$(self).html('Show <a class="size">5</a> | <a class="size">10</a> | <a class="size">20</a> | <a class="size">50</a> | <a class="size">All</a> results per list.');
+			$("#"+self.id+" .size").each(function(){
+				if ($(this).html()==items_per_page || (ALL==items_per_page && $(this).html()=="All"))
+					$(this).addClass("selected");
+				
+				$(this).click(function(){
+					var selfA=this;
+					items_per_page = $(this).html();
+					$('div[id^="Pagination_"]').each(function(){
+						$("#"+self.id+" .size").each(function(){
+							$(this).removeClass("selected");
+						});
+						$(selfA).addClass("selected");
+						var id=$(this)[0].id;
+						var sep=id.indexOf("_");
+						id=id.substr(sep+1);
+						initPagination(id);
+					});
+				});
+			});
+		});
+	};
+})( jQuery );
