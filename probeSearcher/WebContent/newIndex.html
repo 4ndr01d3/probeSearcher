@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>probeSearcher</title>
+        <link rel="stylesheet" href="css/pagination.css" type="text/css" />
+		<link rel="stylesheet" type="text/css" href="css/styleNew.css" />
+		<link rel="stylesheet" type="text/css" href="css/jquery.ui.all.css" />
+		<script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="js/jsdas.0.1.6.min.js"></script>
+		<script type="text/javascript" src="js/control.js"></script>
+		<script type="text/javascript" src="js/jquery.pagination.js"></script>
+        <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+        
+	<link rel="shortcut icon" href="http://cbio.uct.ac.za/favicon.ico" />
+</head>
+<body>
+<div id="mainContainer" class="mainContainer">
+	<img src="images/c.gif" class="price" />
+	
+	<div class="formTop">
+		<div class="title">
+			<h1>probeSearcher</h1>
+			<h2>Find the right chip for your experiment</h2>
+		</div>		
+	</div>
+
+	<div class="formContainer">
+	
+		<!-- SITE DETAILS -->
+		<div class="form">	  		
+			<fieldset class="one">
+				<div class="subtitle"></div>
+				<legend class="nameYourPortfolio">Use <select  id="from_id" class="styled-select"><option>UniProt</option><option>Ensembl</option><option>Probes</option></select> ids to find <select id="to_id" class="styled-select"><option>Probes</option><option disabled="disabled">Ensembl</option><option disabled="disabled">UniProt</option></select>: <img class="number" src="images/c.gif" /></legend>
+
+				<ul data-name="site">
+					<!-- fieldRow // .ok .error .validating -->
+					<li class="fieldRow">
+						<textarea rows="5" id="query_ids" autofocus></textarea>
+						<span id="examples" class="description"></span>
+						<span class="errorMessage"></span>
+						<img src="images/c.gif" class="validation" />
+					</li>
+					<li id="advanced" class="fieldRow">
+						<div id="advanced_target">
+							<label for="platform_">Platform</label> 
+							<select id="platform_" class="platform_list"></select><br /><br /> 
+  							<label for="organism_">Organism:</label> 
+							<select id="organism_" class="organism_list"></select><br />
+						</div>
+						<div id="advanced_link"></div>
+					</li>
+					<li class="fieldRow">
+						<div class="buttons">
+							<button id="searchB" class="img search">Search</button>
+						</div>
+					</li>
+				</ul>
+			</fieldset>
+			
+			<!-- ACCOUNT DETAILS -->
+			<fieldset class="two">
+				<legend class="createYourLogin">Results:<img class="number" src="images/c.gif" /></legend>
+				<section id="results" class="results">
+				</section>
+				
+			</fieldset>
+			
+			
+			<div class="activation clearfix">
+			
+		   			  
+			</div>
+			<div style="text-align: right;"><a href="https://code.google.com/p/probes-searcher/"><img width="20px" alt="Google Code Repository" src="images/googlecode.png"><span style="float: right;padding: 2px; color:gray;">Source Code</span></a></div>
+		</div>
+		
+		<img class="clouds" src="images/clouds.png" />
+	</div><!-- End .formContainer -->
+	<div style="height:200px;"></div>
+</div><!-- End whooContainer -->
+<div style="display:none">
+<div id="dialog" title="Waiting for response..." align="center">
+<progress >working...</progress>
+</div>
+</div>
+<script type="text/javascript">
+	$('.organism_list').fillOrganisms();
+	$('.platform_list').fillPlatforms();
+	$('#advanced').hider();
+	$('#from_id').change(function(){changeType("from_id");});
+	$('#to_id').change(function(){changeType("to_id");});
+	changeType("from_id");
+	$('#searchB').click(function(){
+		firstCall=true;
+		$('#results').html('<progress>working...</progress>');
+		getProbes($('#query_ids').val(),"IGNORE");
+	});
+</script>
+
+</body>
+</html>

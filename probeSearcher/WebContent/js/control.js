@@ -108,7 +108,7 @@ var response = function(res){
 			gotAnnotations=true;
 		}
 	}catch(err){
-		text='<br/>The query ('+currentQuery+') didnt bring any results for this protein<br/>';
+		text='<br/><br/> The query ('+currentQuery+') did not find any results<br/>';
 	}
 	if (firstCall){
 		firstCall=false;
@@ -124,6 +124,9 @@ var response = function(res){
 			initPagination(res.GFF.SEGMENT[i].id);
 		$('#list_size').listSizeSelector();
 	}
+	$("#dialog").dialog('close');
+    var new_position = $('#results').offset();
+    window.scrollTo(new_position.left,new_position.top-40);
 };
 function initPagination(divId) {
     // count entries inside the hidden content
@@ -159,7 +162,18 @@ var getDisplayPage= function(key){
 	for (var i = 0; i < annotations[key].length; i++) {
 		text +='<div class="result">';
 		var ann = annotations[key][i];
-		text +='<a href="'+ann.LINK[0].href+'" target="_blank">'+ann.label+'</a><br/>';
+		var probe= 	key.split(".")[0];
+
+		if (currentType=="p2e")
+			text +='<a href="http://www.ensembl.org/'+ann.TYPE.category.replace(" ", "_")+'/Gene/Summary?g='+ann.label+'" target="_blank">'+ann.label+'</a><br/>';
+//			text +='<a href="http://www.ensembl.org/'+ann.TYPE.category.replace(" ", "_")+'/Location/Genome?fdb=funcgen;ftype=ProbeFeature;g='+ann.label+';id='+probe+';ptype=pset" target="_blank">'+ann.label+'</a><br/>';
+		else if(currentType=="p2u")
+			text +='<a href="http://www.uniprot.org/uniprot/'+ann.label+'" target="_blank">'+ann.label+'</a><br/>';
+//			text +='<a href="http://www.ensembl.org/'+ann.TYPE.category.replace(" ", "_")+'/Location/Genome?fdb=funcgen;ftype=ProbeFeature;id='+probe+';ptype=pset;p='+ann.label+';" target="_blank">'+ann.label+'</a><br/>';
+		else if(currentType=="u2p")
+			text +='<a href="'+ann.LINK[0].href+'p='+key+'" target="_blank">'+ann.label+'</a><br/>';
+		else
+			text +='<a href="'+ann.LINK[0].href+'g='+key+'" target="_blank">'+ann.label+'</a><br/>';
 		text +='<div class="result_item"> &#149; Chip: '+ann.TYPE.textContent+'</div>';
 //		text +='<div class="result_item"> &#149; Type: XXXXX</div>';
 		text +='<div class="result_item"> &#149; Organism: '+ann.TYPE.category+'</div>';
@@ -171,9 +185,13 @@ var getDisplayPage= function(key){
 };
 
 var getProbes = function(str, type){
+	$("#dialog").dialog({ modal: true, closeText: 'cancel', draggable: false });
 	currentQuery=str;
-	currentType=type;
-	switch(type){
+	if(type=="IGNORE")
+		type="";
+	else
+		currentType=type;
+	switch(currentType){
 		case "u2p":
 			ids=jQuery.parseIds(str,"UPPER");
 			if ($('#platform_'+type).val()=="Any" && $('#organism_'+type).val()=="Any"){
@@ -195,7 +213,8 @@ var getProbes = function(str, type){
 				if (query!="") query = "("+query+") AND ";
 				query += "typeCategory:\""+$('#organism_'+type).val()+"\"";
 			}
-			$('#results').html(query);
+		 	var params = {query: query};
+			client_u2p.features(params, response, error_response);
 			break;
 		case "p2u":
 			ids=jQuery.parseIds(str);
@@ -214,7 +233,8 @@ var getProbes = function(str, type){
 				if (query!="") query = "("+query+") AND ";
 				query += "typeCategory:\""+$('#organism_'+type).val()+"\"";
 			}
-			$('#results').html(query);
+		 	var params = {query: query};
+			client_p2u.features(params, response, error_response);
 			break;
 		case "e2p":
 			ids=jQuery.parseIds(str,"UPPER");
@@ -237,7 +257,8 @@ var getProbes = function(str, type){
 				if (query!="") query = "("+query+") AND ";
 				query += "typeCategory:\""+$('#organism_'+type).val()+"\"";
 			}
-			$('#results').html(query);
+		 	var params = {query: query};
+			client_e2p.features(params, response, error_response);
 			break;
 		case "p2e":
 			ids=jQuery.parseIds(str);
@@ -256,7 +277,8 @@ var getProbes = function(str, type){
 				if (query!="") query = "("+query+") AND ";
 				query += "typeCategory:\""+$('#organism_'+type).val()+"\"";
 			}
-			$('#results').html(query);
+		 	var params = {query: query};
+			client_p2e.features(params, response, error_response);
 			break;
 	}
 };
@@ -314,10 +336,9 @@ var groupByProtein = function(){
 		if (annotations[ann]!=undefined) 
 			initPagination(ann);
 };
-
 var responseChips = function(){
 	var text = '';
-	text = '<div id="list_size" class="size_selector" /><br/>Chips:<br/>';
+	text = '<div id="list_size" class="size_selector" /><br/><br/>Chips:<br/>';
 	text += getDisplayChipPage(chips);
 	text += '<div id="Pagination_group"></div> <br style="clear:both;" /> <div id="Searchresult_group">This content will be replaced when pagination inits.</div>';
 
@@ -445,3 +466,39 @@ var getDisplayChipPage= function(chipGroup){
 		});
 	};
 })( jQuery );
+
+var changeType = function(source){
+	if (source=="from_id"){
+		var select=$('#from_id');
+		if(select.val()=='Probes'){
+			$('#to_id').html('<option>UniProt</option><option>Ensembl</option><option disabled="disabled">Probes</option>');
+			$('#examples').html('Examples: <a class="example">208905_at</a>, <a class="example">A_23_P37856</a>, <a class="example">ILMN_1730416</a>.');
+			if ($('#to_id').val()=="UniProt")
+				currentType="p2u";
+			else
+				currentType="p2e";
+			$('#platform_').val("Any");
+			$('#platform_').hide();
+			$('label[for="platform_"]').hide();
+		}else{
+			$('#to_id').html('<option>Probes</option><option disabled="disabled">Ensembl</option><option disabled="disabled">UniProt</option>');
+			if(select.val()=='UniProt'){
+				$('#examples').html('Examples: <a class="example">P05067</a>, <a class="example">P99999</a>, <a class="example">P69905</a>');
+				currentType="u2p";
+			}else if(select.val()=='Ensembl'){
+				$('#examples').html('Examples: <a class="example">ENSG00000169246</a>, <a class="example">ENSG00000206172</a>');
+				currentType="e2p";
+			}
+			$('#platform_').show();
+			$('label[for="platform_"]').show();
+		}
+		$('span.description > a.example').addExample('query_ids');
+	}else if (source=="to_id"){
+		if ($('#to_id').val()=="UniProt")
+			currentType="p2u";
+		else
+			currentType="p2e";
+	}
+	$('#query_ids').val('');
+	
+};
